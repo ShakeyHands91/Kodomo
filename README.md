@@ -1,4 +1,8 @@
+<div align="center">
+<img src="./.github/assets/logo.png" alt="Mihon Kids logo" width="120"/>
+
 # Mihon Kids
+</div>
 
 A parental-control fork of [Mihon](https://github.com/mihonapp/mihon), an Android reader for manga, webtoons and comics.
 
