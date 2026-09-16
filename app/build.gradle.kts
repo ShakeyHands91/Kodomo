@@ -37,8 +37,8 @@ android {
 
         // Own version series. Forked from Mihon 0.20.4 (versionCode 30); kept above that so the
         // migration framework, whose versions are shared with upstream's, still runs in order.
-        versionCode = 31
-        versionName = "0.1.0"
+        versionCode = 32
+        versionName = "0.1.1"
 
         buildConfigField("String", "COMMIT_COUNT", "\"${getLatestCommitCount()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"${getLatestCommitSha()}\"")
