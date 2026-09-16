@@ -168,7 +168,6 @@ object AboutScreen : Screen() {
                             icon = SimpleIcons.Github,
                             url = "https://github.com/ShakeyHands91/Mihon-Kids",
                         )
-
                     }
                 }
             }
