@@ -19,3 +19,6 @@ local.properties
 # Signing keystores
 *.keystore
 *.jks
+
+*.p12
+*.pfx
