@@ -22,3 +22,6 @@ local.properties
 
 *.p12
 *.pfx
+
+*.p12
+*.pfx
