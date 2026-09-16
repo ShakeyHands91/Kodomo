@@ -36,9 +36,30 @@ Requires JDK 17 and the Android SDK (compileSdk 37.1). Create `keystore.properti
 ./gradlew assembleRelease
 ```
 
-**The store allowlist ships empty.** `domain/src/main/java/mihon/kids/KidsPolicy.kt` starts with `allowedStoreIndexUrls = emptySet()`, so no extension store can be added — a build that has not been told which stores to trust trusts none.
+## What this build allows
 
-That is not the same as the app being useless. Mihon's built-in **local source** is registered independently of extensions, so comics and books copied into the app's storage are readable with no store at all. For a child's device that may be the whole answer: your own files, nothing fetched from anywhere.
+Two allowlists, both compile-time constants in `domain/src/main/java/mihon/kids/KidsPolicy.kt`.
+
+**One extension store**, Keiyoushi:
+
+```
+https://raw.githubusercontent.com/keiyoushi/extensions/repo/index.pb
+```
+
+Paste that exact URL into the app. Nothing else can be added.
+
+**Twenty-five extensions**, out of roughly 1,400 the store offers. Approving the store alone would not be much of a control, since the great majority of what it carries indexes unlicensed scan sites — so the package allowlist is what the fork actually rests on.
+
+| | |
+|---|---|
+| Licensed publishers | MANGA Plus (Shueisha), VIZ, K Manga (Kodansha), Manga UP! (Square Enix), Comikey, Mangamo, Comics Kingdom |
+| Official game comics | League of Legends, HOLONOMETRIA, MLBB Lore, HonkaiImpact3 |
+| Free webcomics | Pepper&Carrot, xkcd, Commit Strip, Sandra and Woo, Dragon Ball Multiverse, Gunnerkrigg Court, Darths & Droids, The Order of the Stick, Dark Legacy Comics, Schlock Mercenary, Swords Comic, aurora, Patch Friday |
+| Other | Aqua Manga — an unofficial scan site, added deliberately |
+
+Both lists fail closed: emptying one allows nothing rather than everything.
+
+Mihon's built-in **local source** works regardless. Files copied into the app's storage are readable with no store and no extensions at all.
 
 ## Changes from upstream
 

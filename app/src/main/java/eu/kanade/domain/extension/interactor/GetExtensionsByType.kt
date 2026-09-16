@@ -37,7 +37,8 @@ class GetExtensionsByType(
                     _loaded.none { it.pkgName == extension.pkgName } &&
                         _notLoaded.none { it.pkgName == extension.pkgName } &&
                         // Mihon Kids: don't advertise what this build refuses to load
-                        KidsPolicy.isContentWarningAllowed(extension.contentWarning)
+                        KidsPolicy.isContentWarningAllowed(extension.contentWarning) &&
+                        KidsPolicy.isExtensionAllowed(extension.pkgName)
                 }
                 .flatMap { ext ->
                     ext.sources.filter { it.lang in enabledLanguages }
