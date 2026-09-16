@@ -36,7 +36,9 @@ Requires JDK 17 and the Android SDK (compileSdk 37.1). Create `keystore.properti
 ./gradlew assembleRelease
 ```
 
-**The app ships inert.** `domain/src/main/java/mihon/kids/KidsPolicy.kt` has an empty store allowlist, which means no extension store can be added and therefore no sources exist. A build that has not been told which stores to trust trusts none. Populate `allowedStoreIndexUrls` before building.
+**The store allowlist ships empty.** `domain/src/main/java/mihon/kids/KidsPolicy.kt` starts with `allowedStoreIndexUrls = emptySet()`, so no extension store can be added — a build that has not been told which stores to trust trusts none.
+
+That is not the same as the app being useless. Mihon's built-in **local source** is registered independently of extensions, so comics and books copied into the app's storage are readable with no store at all. For a child's device that may be the whole answer: your own files, nothing fetched from anywhere.
 
 ## Changes from upstream
 

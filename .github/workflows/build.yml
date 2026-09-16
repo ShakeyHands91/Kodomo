@@ -67,6 +67,10 @@ jobs:
       # Firebase project that isn't ours) and no -Penable-updater (that points
       # the in-app updater at upstream Mihon's releases).
       - name: Build app
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: ./gradlew assembleRelease
 
       - name: Upload APKs

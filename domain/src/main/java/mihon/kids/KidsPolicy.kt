@@ -34,7 +34,12 @@ object KidsPolicy {
      * is reading, and an arbitrary store can label an adult extension as safe.
      *
      * An empty set means no store can be added at all, which is the safe default: a build that has
-     * not been told which stores to trust should trust none, rather than all.
+     * not been told which stores to trust should trust none, rather than all. The app still works
+     * with none — the built-in local source is registered independently of extensions, so files
+     * side-loaded into the app's storage are readable either way.
+     *
+     * Match the URL exactly as it is typed into the app. A store's index may redirect to a second
+     * URL, and that redirect target is checked against this set too; see ExtensionStoreService.
      */
     val allowedStoreIndexUrls: Set<String> = emptySet()
 

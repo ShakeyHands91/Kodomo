@@ -49,18 +49,23 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    if (System.getenv("MIHON_GITHUB_RELEASE").toBoolean()) {
-        val tempStoreFile = file(System.getenv("RUNNER_TEMP")).resolve("antsy.keystore")
+    // Mihon Kids: CI signs with the keystore held in the repository's secrets, so every build
+    // signs with the same key and installs as an update over the last one. Without this each CI
+    // run generates its own throwaway debug keystore, and Android refuses the update.
+    val keystoreBase64 = System.getenv("KEYSTORE_BASE64")
 
-        val storeFileBytes = System.getenv("storeFileBase64").let(Base64::decode)
-        tempStoreFile.outputStream().use { it.write(storeFileBytes) }
+    if (!keystoreBase64.isNullOrBlank()) {
+        val tempStoreFile = layout.buildDirectory.get().asFile.resolve("signing/ci.keystore")
+        tempStoreFile.parentFile.mkdirs()
+        tempStoreFile.writeBytes(Base64.decode(keystoreBase64))
 
         signingConfigs {
             named("debug") {
                 storeFile = tempStoreFile
-                storePassword = System.getenv("storePassword")
-                keyAlias = System.getenv("keyAlias")
-                keyPassword = System.getenv("keyPassword")
+                storePassword = System.getenv("KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS")
+                // PKCS12 keystores use one password for both the store and the key.
+                keyPassword = System.getenv("KEY_PASSWORD") ?: System.getenv("KEYSTORE_PASSWORD")
             }
         }
     } else if (keystorePropertiesFile.exists()) {
