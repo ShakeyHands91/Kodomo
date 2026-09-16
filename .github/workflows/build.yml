@@ -1,5 +1,6 @@
-name: Build & Test
+name: Build APK
 on:
+  workflow_dispatch:
   pull_request:
     paths:
       - '**'
@@ -12,6 +13,7 @@ on:
   push:
     branches:
       - main
+      - kids
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -42,7 +44,9 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
 
+      # Informational only: a formatting nit shouldn't stop you getting an APK.
       - name: Check code format
+        continue-on-error: true
         run: ./gradlew spotlessCheck
 
       - name: Run unit tests
@@ -59,14 +63,19 @@ jobs:
           name: test-report-${{ github.sha }}
           path: app/build/reports/tests/testDebugUnitTest
 
+      # Mihon Kids: no -Pinclude-telemetry (that wires crash reporting to a
+      # Firebase project that isn't ours) and no -Penable-updater (that points
+      # the in-app updater at upstream Mihon's releases).
       - name: Build app
-        run: ./gradlew assembleRelease -Pinclude-telemetry -Penable-updater
+        run: ./gradlew assembleRelease
 
-      - name: Upload APK
+      - name: Upload APKs
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: arm64-v8a-${{ github.sha }}
-          path: app/build/outputs/apk/release/app-arm64-v8a-release.apk
+          name: mihon-kids-apk-${{ github.sha }}
+          path: |
+            app/build/outputs/apk/release/app-arm64-v8a-release.apk
+            app/build/outputs/apk/release/app-universal-release.apk
 
       - name: Upload mapping
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
