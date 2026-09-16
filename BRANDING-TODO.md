@@ -1,25 +1,30 @@
-# Branding still to replace
+# Branding
 
-The text-level rebrand is done: app name, README, NOTICE, store metadata, and the removal of upstream's logo, funding config, issue templates and release workflows.
+The rebrand is complete — no Mihon artwork, naming or GitHub configuration remains in this repo.
 
-**What remains is artwork, and it still contains Mihon's.** Apache-2.0 §6 grants no trademark rights, so these must be replaced before any public release or distribution. Each is a vector drawable whose path data draws the Mihon logo — renaming the file changes nothing.
+## What the icons are now
 
-| File | What it is |
+Built from the Mihon Kids logo: a calico cat in round glasses reading a picture book.
+
+| Resource | What it is |
 |---|---|
-| `app/src/main/res/drawable/ic_mihon.xml` | App logo. Used in the settings header (`LogoHeader.kt`) and as the small icon on every notification (`LibraryUpdateNotifier`, `BackupNotifier`, `ExtensionInstallService`) |
-| `app/src/main/res/drawable/ic_mihon_splash.xml` | Splash screen icon; wraps `ic_mihon`. Referenced from `res/values/themes.xml` |
-| `app/src/main/res/drawable/ic_launcher_foreground.xml` | Launcher icon foreground |
-| `app/src/main/res/drawable/ic_launcher_background.xml` | Launcher icon background |
-| `app/src/main/res/drawable/ic_launcher_monochrome.xml` | Themed-icon monochrome layer (Android 13+) |
-| `app/src/debug/res/drawable/ic_launcher_foreground.xml` | Debug variant |
-| `app/src/debug/res/drawable/ic_launcher_background.xml` | Debug variant |
+| `res/drawable-*dpi/ic_launcher_foreground.png` | The cat, cut out of its background, at five densities. Sits inside the 72dp adaptive-icon safe zone, so nothing is clipped by round, squircle or square masks |
+| `res/drawable/ic_launcher_background.xml` | Flat `#BFE3D8` mint, picked to contrast the cream cat and echo the book |
+| `res/drawable/ic_launcher_monochrome.xml` | Themed-icon layer (Android 13+): the flat mark below, scaled into the safe zone |
+| `res/drawable/ic_app.xml` | 24dp flat mark — cat head, two round lenses knocked out, open book. Used for the settings header (tinted by `LogoHeader`) and as the small icon on every notification |
+| `res/drawable-*dpi/ic_app_logo.png` | Full-colour cat for the splash screen, via `ic_app_splash.xml` |
+| `fastlane/.../images/icon.png`, `featureGraphic.png` | 512×512 icon and 1024×500 feature graphic for a store listing |
 
-`res/mipmap/ic_launcher.xml` is just the adaptive-icon wrapper pointing at the three launcher drawables — it needs no change once they are replaced.
+`ic_mihon.xml` and `ic_mihon_splash.xml` are gone, along with upstream's launcher vectors and the debug-variant overrides (debug builds now use the main icons).
 
-Also missing, and needed if this ever goes to a store listing: `fastlane/metadata/android/en-US/images/` (icon, feature graphic, phone screenshots). Upstream's were deleted rather than reused.
+## Why the notification icon is a flat mark rather than the illustration
 
-## Replacing them
+Android renders a notification small icon from its **alpha channel only**, painted in a single colour. A detailed illustration becomes a white blob, and a plain silhouette of this cat is an unreadable lump — the glasses and book vanish. So `ic_app.xml` is a purpose-drawn 24dp mark in the logo's spirit: round head, ears, two lens holes, open book. It stays legible down to 24px, which is where it is actually used.
 
-Android Studio's Image Asset tool (right-click `res` → New → Image Asset) generates the launcher set from a single source image and overwrites the foreground/background/monochrome drawables directly. For `ic_mihon`, any 24dp vector works — notification small icons must be a solid white silhouette on transparent, or Android renders them as a grey blob.
+The same mark serves as the Android 13+ themed-icon (monochrome) layer, for the same reason.
 
-If you want to keep the file names stable, replace the path data inside `ic_mihon.xml` and leave the eight code references alone. If you'd rather rename to `ic_app`, the references are in the five files listed in the table plus `themes.xml`.
+## Still worth doing
+
+- **The source logo appears to be AI-generated.** In several jurisdictions, including the US, purely AI-generated images may not attract copyright, so you may have no rights to enforce if someone reuses it. Fine for a personal app; worth knowing if this repo stays public.
+- Screenshots for the store listing (`fastlane/.../images/phoneScreenshots/`) — upstream's were deleted rather than reused, and none have replaced them.
+- The feature graphic is a centre crop of the original wide illustration. It works, but a purpose-made 1024×500 with the app name would be better if you ever publish a listing.
