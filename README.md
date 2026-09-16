@@ -1,74 +1,68 @@
-<div align="center">
+# Mihon Kids
 
-<a href="https://mihon.app">
-    <img src="./.github/assets/logo.png" alt="Mihon logo" title="Mihon logo" width="80"/>
-</a>
+A parental-control fork of [Mihon](https://github.com/mihonapp/mihon), an Android reader for manga, webtoons and comics.
 
-# Mihon [App](#)
+Two things differ from upstream:
 
-### Full-featured reader
-Discover and read manga, webtoons, comics, and more – easier than ever on your Android device.
+- **Extensions rated 18+ or mixed cannot be installed, loaded or listed.** This is a compile-time constant, not a setting. There is no toggle, no prompt and no preference that widens it.
+- **Extension stores must be on a build-time allowlist**, and adding one is gated behind a parent PIN that is separate from the device's own screen lock.
 
-[![Discord server](https://img.shields.io/discord/1195734228319617024.svg?label=&labelColor=6A7EC2&color=7389D8&logo=discord&logoColor=FFFFFF)](https://discord.gg/mihon)
-[![GitHub downloads](https://img.shields.io/github/downloads/mihonapp/mihon/total?label=downloads&labelColor=27303D&color=0D1117&logo=github&logoColor=FFFFFF&style=flat)](https://mihon.app/download)
+## Why a fork rather than a setting
 
-[![CI](https://img.shields.io/github/actions/workflow/status/mihonapp/mihon/build.yml?labelColor=27303D)](https://github.com/mihonapp/mihon/actions/workflows/build_push.yml)
-[![License: Apache-2.0](https://img.shields.io/github/license/mihonapp/mihon?labelColor=27303D&color=0877d2)](/LICENSE)
-[![Translation status](https://img.shields.io/weblate/progress/mihon?labelColor=27303D&color=946300)](https://hosted.weblate.org/engage/mihon/)
+Upstream Mihon already models content ratings properly and can filter on them. What it does is put that filter behind the device credential — so on a child's own tablet, the child's own PIN unlocks it. Upstream's `authenticate()` helper also returns success outright when no screen lock is configured at all.
 
-## Download
+Mihon Kids removes the choice instead of guarding it. The rating check runs first in the extension loader, ahead of signature trust, so a disallowed extension cannot be talked into loading by trusting it, and an APK sideloaded with `adb` is inert on disk rather than merely hidden from the UI.
 
-[![Mihon Stable](https://img.shields.io/github/release/mihonapp/mihon.svg?maxAge=3600&label=Stable&labelColor=06599d&color=043b69)](https://mihon.app/download)
-[![Mihon Beta](https://img.shields.io/github/v/release/mihonapp/mihon-preview.svg?maxAge=3600&label=Beta&labelColor=2c2c47&color=1c1c39)](https://mihon.app/download)
+## What this does not do
 
-*Requires Android 8.0 or higher.*
+Be clear-eyed about the limits:
 
-## Features
+- **Ratings are self-declared.** An extension's rating comes from its own package metadata and its store's own index — both controlled by whoever published them. The store allowlist, not the rating, is what the ban ultimately rests on.
+- **A "safe" source can still carry mature titles.** This filters extensions, not content. Many general sites carry mature material under a safe-rated extension.
+- **Nothing stops a second reader being installed.** Android's own parental controls are the outer perimeter; this is the inner one. Use both.
+- **A child with USB debugging can clear app data**, which resets the PIN.
 
-<div align="left">
+This is a speed bump sized for a young child, not a security boundary against a determined teenager.
 
-* Local reading of content.
-* A configurable reader with multiple viewers, reading directions and other settings.
-* Tracker support: [MangaBaka](https://mangabaka.org), [MyAnimeList](https://myanimelist.net/), [AniList](https://anilist.co/), [Kitsu](https://kitsu.app/), [MangaUpdates](https://mangaupdates.com), [Shikimori](https://shikimori.one), [Bangumi](https://bgm.tv/), and [Hikka](https://hikka.io/) support.
-* Categories to organize your library.
-* Light and dark themes.
-* Schedule updating your library for new chapters.
-* Create backups locally to read offline or to your desired cloud service.
-* Plus much more...
+## Building
 
-</div>
+Requires JDK 17 and the Android SDK (compileSdk 37.1). Create `keystore.properties` at the repo root with `storeFile`, `storePassword`, `keyAlias` and `keyPassword`, then:
 
-## Contributing
+```
+./gradlew assembleRelease
+```
 
-[Code of conduct](./CODE_OF_CONDUCT.md) · [Contributing guide](./CONTRIBUTING.md)
+**The app ships inert.** `domain/src/main/java/mihon/kids/KidsPolicy.kt` has an empty store allowlist, which means no extension store can be added and therefore no sources exist. A build that has not been told which stores to trust trusts none. Populate `allowedStoreIndexUrls` before building.
 
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+## Changes from upstream
 
-Before reporting a new issue, take a look at the [FAQ](https://mihon.app/docs/faq/general), the [changelog](https://mihon.app/changelogs/) and the already opened [issues](https://github.com/mihonapp/mihon/issues); if you got any questions, join our [Discord server](https://discord.gg/mihon).
+This is a modified version of Mihon. Modifications are made in accordance with section 4(b) of the Apache License 2.0. Files changed relative to upstream:
 
+- `domain/src/main/java/mihon/kids/KidsPolicy.kt` *(new)* — the content and store policy
+- `app/.../extension/util/ExtensionLoader.kt` — rating checked first and unconditionally
+- `app/.../domain/extension/interactor/GetExtensionsByType.kt` — disallowed extensions not listed
+- `app/.../domain/source/service/SourcePreferences.kt` — content-warning preferences removed
+- `app/.../presentation/more/settings/screen/SettingsBrowseScreen.kt` — their settings UI removed
+- `app/.../extension/ExtensionManager.kt` — no longer reloads on preference change
+- `domain/.../extension/interactor/AddExtensionStore.kt` — store allowlist enforced
+- `app/.../backup/restore/restorers/ExtensionStoreRestorer.kt` — unapproved stores skipped on restore
+- `app/.../migrations/TrustExtensionRepositoryMigration.kt` — legacy store import dropped
+- `app/.../migrations/KidsContentPolicyMigration.kt` *(new, replaces `ContentWarningMigration`)*
+- `app/build.gradle.kts` — application ID, version series
+- Branding, README, issue templates and release workflows replaced or removed
 
-### Repositories
+Forked from `mihonapp/mihon` at commit `a7179805` (v0.20.4).
 
-[![mihonapp/website - GitHub](https://github-stats-extended.vercel.app/api/pin/?username=mihonapp&repo=website&bg_color=161B22&text_color=c9d1d9&title_color=0877d2&icon_color=0877d2&border_radius=8&hide_border=true&description_lines_count=2)](https://github.com/mihonapp/website/)
-[![mihonapp/bitmap.kt - GitHub](https://github-stats-extended.vercel.app/api/pin/?username=mihonapp&repo=bitmap.kt&bg_color=161B22&text_color=c9d1d9&title_color=0877d2&icon_color=0877d2&border_radius=8&hide_border=true&description_lines_count=2)](https://github.com/mihonapp/bitmap.kt/)
+## Disclaimer
 
-### Credits
+The developer of this application has no affiliation with any content provider, and this application hosts zero content. It is not affiliated with or endorsed by the Mihon project.
 
-Thank you to all the people who have contributed!
+## License
 
-<a href="https://github.com/mihonapp/mihon/graphs/contributors">
-    <img src="https://contrib.rocks/image?repo=mihonapp/mihon" alt="Mihon app contributors" title="Mihon app contributors" width="800"/>
-</a>
-
-### Disclaimer
-
-The developer(s) of this application does not have any affiliation with the content providers available, and this application hosts zero content.
-
-### License
-
-<pre>
+```
 Copyright © 2015 Javier Tomás
 Copyright © 2024 Mihon Open Source Project
+Copyright © 2026 Mihon Kids contributors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -81,6 +75,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-</pre>
+```
 
-</div>
+"Mihon" and the Mihon logo are the property of the Mihon Open Source Project and are not licensed under Apache-2.0. They are referenced here only to identify the upstream project this is derived from.
