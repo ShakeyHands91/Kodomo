@@ -35,13 +35,9 @@ class AppUpdateChecker(
     }
 }
 
-val GITHUB_REPO: String by lazy {
-    if (isNightlyBuildType) {
-        "mihonapp/mihon-preview"
-    } else {
-        "mihonapp/mihon"
-    }
-}
+// Mihon Kids: upstream's fork guidance says to change or disable the update checker, so that a
+// fork never offers its users the main app's releases. Points at this repository instead.
+const val GITHUB_REPO: String = "ShakeyHands91/Mihon-Kids"
 
 val RELEASE_TAG: String by lazy {
     if (isNightlyBuildType) {

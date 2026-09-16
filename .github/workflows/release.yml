@@ -1,0 +1,77 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build & publish release
+    runs-on: 'ubuntu-24.04'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Check the tag matches versionName
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          VERSION=$(grep -oP 'versionName\s*=\s*"\K[^"]+' app/build.gradle.kts | head -1)
+          echo "tag=$TAG versionName=$VERSION"
+          if [ "$TAG" != "$VERSION" ]; then
+            echo "::error::Tag v$TAG does not match versionName $VERSION in app/build.gradle.kts."
+            echo "::error::The in-app updater compares the two, so they must agree. Bump versionName"
+            echo "::error::(and versionCode, or Android will refuse the update) and re-tag."
+            exit 1
+          fi
+
+      - name: Set up JDK
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          java-version-file: .github/.java-version
+          distribution: temurin
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+
+      - name: Build signed APKs
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: ./gradlew assembleRelease -Penable-updater
+
+      - name: Refuse to publish an unsigned build
+        run: |
+          if [ -z "${{ secrets.KEYSTORE_BASE64 }}" ]; then
+            echo "::error::KEYSTORE_BASE64 is not set, so this build was signed with a throwaway"
+            echo "::error::debug key and could never be installed as an update. Set the signing"
+            echo "::error::secrets before publishing a release."
+            exit 1
+          fi
+
+      - name: Rename the APKs
+        run: |
+          cd app/build/outputs/apk/release
+          # The updater matches assets by the ABI substring in the filename
+          # (see ReleaseServiceImpl.getDownloadLink), so keep -arm64-v8a, -armeabi-v7a,
+          # -x86_64 and -x86 intact, and keep the universal apk free of all four.
+          for f in app-*-release.apk; do
+            abi="${f#app-}"; abi="${abi%-release.apk}"
+            mv "$f" "mihon-kids-${GITHUB_REF_NAME}-${abi}.apk"
+          done
+          ls -la
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "Mihon Kids $GITHUB_REF_NAME" \
+            --generate-notes \
+            app/build/outputs/apk/release/mihon-kids-*.apk

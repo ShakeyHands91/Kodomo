@@ -93,6 +93,10 @@ internal object ExtensionLoader {
             logcat(LogPriority.ERROR) { "Refusing to install extension rated $contentWarning." }
             return false
         }
+        if (!KidsPolicy.isExtensionAllowed(extension.packageName)) {
+            logcat(LogPriority.ERROR) { "Refusing to install unapproved extension ${extension.packageName}." }
+            return false
+        }
 
         val currentExtension = getExtensionPackageInfoFromPkgName(context, extension.packageName)
 
@@ -342,6 +346,14 @@ internal object ExtensionLoader {
         // out of by trusting a signature, and so the decision does not depend on any preference.
         if (!KidsPolicy.isContentWarningAllowed(contentWarning)) {
             logcat(LogPriority.WARN) { "Extension $pkgName is rated $contentWarning and is not allowed" }
+            return notLoaded(Extension.NotLoaded.Reason.Filtered)
+        }
+
+        // The store's rating is self-declared, so the package allowlist is what the ban actually
+        // rests on. Enforced here rather than at the install button, so an apk that arrives by any
+        // other route — adb, a file manager, a restored backup — registers no sources either.
+        if (!KidsPolicy.isExtensionAllowed(pkgName)) {
+            logcat(LogPriority.WARN) { "Extension $pkgName is not on the approved list" }
             return notLoaded(Extension.NotLoaded.Reason.Filtered)
         }
 
