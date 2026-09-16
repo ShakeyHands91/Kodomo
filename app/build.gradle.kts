@@ -31,10 +31,14 @@ android {
     namespace = "eu.kanade.tachiyomi"
 
     defaultConfig {
-        applicationId = "app.mihon"
+        // Mihon Kids: must differ from upstream's "app.mihon" so both can coexist on a device and
+        // so this build never receives an upstream update.
+        applicationId = "app.mihonkids"
 
-        versionCode = 30
-        versionName = "0.20.4"
+        // Own version series. Forked from Mihon 0.20.4 (versionCode 30); kept above that so the
+        // migration framework, whose versions are shared with upstream's, still runs in order.
+        versionCode = 31
+        versionName = "0.1.0"
 
         buildConfigField("String", "COMMIT_COUNT", "\"${getLatestCommitCount()}\"")
         buildConfigField("String", "COMMIT_SHA", "\"${getLatestCommitSha()}\"")

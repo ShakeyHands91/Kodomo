@@ -7,6 +7,7 @@ import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.extension.model.Extension
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import mihon.kids.KidsPolicy
 
 @Inject
 class GetExtensionsByType(
@@ -15,8 +16,6 @@ class GetExtensionsByType(
 ) {
 
     fun subscribe(): Flow<Extensions> {
-        val enabledContentWarnings = preferences.enabledContentWarnings.get()
-
         return combine(
             preferences.enabledLanguages.changes(),
             extensionManager.loadedExtensionsFlow,
@@ -37,7 +36,8 @@ class GetExtensionsByType(
                 .filter { extension ->
                     _loaded.none { it.pkgName == extension.pkgName } &&
                         _notLoaded.none { it.pkgName == extension.pkgName } &&
-                        extension.contentWarning in enabledContentWarnings
+                        // Mihon Kids: don't advertise what this build refuses to load
+                        KidsPolicy.isContentWarningAllowed(extension.contentWarning)
                 }
                 .flatMap { ext ->
                     ext.sources.filter { it.lang in enabledLanguages }

@@ -2,6 +2,9 @@ package eu.kanade.tachiyomi.data.backup.restore.restorers
 
 import dev.zacsweers.metro.Inject
 import eu.kanade.tachiyomi.data.backup.models.BackupExtensionStore
+import logcat.LogPriority
+import mihon.kids.KidsPolicy
+import tachiyomi.core.common.util.system.logcat
 import tachiyomi.data.Database
 
 @Inject
@@ -12,6 +15,13 @@ class ExtensionStoreRestorer(
     suspend operator fun invoke(
         backupStore: BackupExtensionStore,
     ) {
+        // Mihon Kids: restoring a backup is otherwise a silent way to add extension stores — no
+        // prompt, no PIN, straight into the table. Anything outside the allowlist is dropped.
+        if (!KidsPolicy.isStoreAllowed(backupStore.indexUrl)) {
+            logcat(LogPriority.WARN) { "Skipped restoring unapproved extension store ${backupStore.indexUrl}" }
+            return
+        }
+
         database.extension_storeQueries.upsert(
             indexUrl = backupStore.indexUrl,
             name = backupStore.name,

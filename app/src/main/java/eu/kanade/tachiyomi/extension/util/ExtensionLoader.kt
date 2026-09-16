@@ -18,6 +18,7 @@ import logcat.LogPriority
 import mihon.app.di.appGraph
 import mihon.data.dalvik.DelegateLastClassLoaderCompat
 import mihon.domain.extension.model.ContentWarning
+import mihon.kids.KidsPolicy
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.system.logcat
 import java.io.File
@@ -59,9 +60,40 @@ internal object ExtensionLoader {
 
     private fun getPrivateExtensionDir(context: Context) = File(context.filesDir, "exts")
 
+    /**
+     * The rating an extension declares for itself, in its package metadata.
+     *
+     * Self-declared and therefore only as honest as whoever built the apk — see [KidsPolicy] on why
+     * the store allowlist, not this value, is what the ban ultimately rests on.
+     */
+    private fun readContentWarning(pkgInfo: PackageInfo): ContentWarning {
+        val metaData = pkgInfo.applicationInfo?.metaData
+        return when {
+            metaData == null -> ContentWarning.SAFE
+            metaData.containsKey(METADATA_CONTENT_WARNING) -> {
+                when (metaData.getInt(METADATA_CONTENT_WARNING)) {
+                    1 -> ContentWarning.MIXED
+                    2 -> ContentWarning.NSFW
+                    else -> ContentWarning.SAFE
+                }
+            }
+            metaData.getInt(METADATA_NSFW) == 1 -> ContentWarning.NSFW
+            else -> ContentWarning.SAFE
+        }
+    }
+
     fun installPrivateExtensionFile(context: Context, file: File): Boolean {
         val extension = context.packageManager.getPackageArchiveInfo(file.absolutePath, PACKAGE_FLAGS)
             ?.takeIf { isPackageAnExtension(it) } ?: return false
+
+        // Mihon Kids: refuse to even copy a disallowed apk into the private extension dir. The
+        // loader would filter it anyway, but there is no reason to keep it on disk.
+        val contentWarning = readContentWarning(extension)
+        if (!KidsPolicy.isContentWarningAllowed(contentWarning)) {
+            logcat(LogPriority.ERROR) { "Refusing to install extension rated $contentWarning." }
+            return false
+        }
+
         val currentExtension = getExtensionPackageInfoFromPkgName(context, extension.packageName)
 
         if (currentExtension != null) {
@@ -118,9 +150,6 @@ internal object ExtensionLoader {
         alreadyLoaded: Map<String, Extension.Loaded> = emptyMap(),
     ): List<Extension.Installed> {
         val trustExtension = context.appGraph.trustExtension
-        val sourcePreferences = context.appGraph.sourcePreferences
-        val enabledContentWarnings = sourcePreferences.enabledContentWarnings.get()
-        val applyContentWarningsToInstalled = sourcePreferences.applyContentWarningsToInstalled.get()
 
         val pkgManager = context.packageManager
 
@@ -175,8 +204,6 @@ internal object ExtensionLoader {
                             context = context,
                             extensionInfo = it,
                             trustExtension = trustExtension,
-                            enabledContentWarnings = enabledContentWarnings,
-                            applyContentWarningsToInstalled = applyContentWarningsToInstalled,
                             alreadyLoaded = alreadyLoaded[it.packageInfo.packageName],
                         )
                     }
@@ -196,13 +223,10 @@ internal object ExtensionLoader {
             return null
         }
 
-        val sourcePreferences = context.appGraph.sourcePreferences
         return loadExtensionCatching(
             context = context,
             extensionInfo = extensionPackage,
             trustExtension = context.appGraph.trustExtension,
-            enabledContentWarnings = sourcePreferences.enabledContentWarnings.get(),
-            applyContentWarningsToInstalled = sourcePreferences.applyContentWarningsToInstalled.get(),
         )
     }
 
@@ -251,8 +275,6 @@ internal object ExtensionLoader {
         context: Context,
         extensionInfo: ExtensionInfo,
         trustExtension: TrustExtension,
-        enabledContentWarnings: Set<ContentWarning>,
-        applyContentWarningsToInstalled: Boolean,
         alreadyLoaded: Extension.Loaded? = null,
     ): Extension.Installed {
         return try {
@@ -260,8 +282,6 @@ internal object ExtensionLoader {
                 context = context,
                 extensionInfo = extensionInfo,
                 trustExtension = trustExtension,
-                enabledContentWarnings = enabledContentWarnings,
-                applyContentWarningsToInstalled = applyContentWarningsToInstalled,
                 alreadyLoaded = alreadyLoaded,
             )
         } catch (e: Throwable) {
@@ -289,8 +309,6 @@ internal object ExtensionLoader {
         context: Context,
         extensionInfo: ExtensionInfo,
         trustExtension: TrustExtension,
-        enabledContentWarnings: Set<ContentWarning>,
-        applyContentWarningsToInstalled: Boolean,
         alreadyLoaded: Extension.Loaded? = null,
     ): Extension.Installed {
         val pkgManager = context.packageManager
@@ -304,18 +322,7 @@ internal object ExtensionLoader {
             ?: pkgName
         val versionName = pkgInfo.versionName
         val versionCode = PackageInfoCompat.getLongVersionCode(pkgInfo)
-        val contentWarning = when {
-            metaData == null -> ContentWarning.SAFE
-            metaData.containsKey(METADATA_CONTENT_WARNING) -> {
-                when (metaData.getInt(METADATA_CONTENT_WARNING)) {
-                    1 -> ContentWarning.MIXED
-                    2 -> ContentWarning.NSFW
-                    else -> ContentWarning.SAFE
-                }
-            }
-            metaData.getInt(METADATA_NSFW) == 1 -> ContentWarning.NSFW
-            else -> ContentWarning.SAFE
-        }
+        val contentWarning = readContentWarning(pkgInfo)
 
         fun notLoaded(
             reason: Extension.NotLoaded.Reason,
@@ -330,6 +337,13 @@ internal object ExtensionLoader {
             libVersion = libVersion,
             reason = reason,
         )
+
+        // Mihon Kids: checked first and unconditionally, so a disallowed rating can never be talked
+        // out of by trusting a signature, and so the decision does not depend on any preference.
+        if (!KidsPolicy.isContentWarningAllowed(contentWarning)) {
+            logcat(LogPriority.WARN) { "Extension $pkgName is rated $contentWarning and is not allowed" }
+            return notLoaded(Extension.NotLoaded.Reason.Filtered)
+        }
 
         if (appInfo == null || metaData == null) {
             logcat(LogPriority.WARN) { "Missing application info for extension $extName" }
@@ -361,11 +375,6 @@ internal object ExtensionLoader {
         } else if (!trustExtension.isTrusted(pkgInfo, signatures)) {
             logcat(LogPriority.WARN) { "Extension $pkgName isn't trusted" }
             return notLoaded(Extension.NotLoaded.Reason.Untrusted(signatures.last()), libVersion)
-        }
-
-        if (applyContentWarningsToInstalled && contentWarning !in enabledContentWarnings) {
-            logcat(LogPriority.WARN) { "Extension $pkgName with $contentWarning not allowed" }
-            return notLoaded(Extension.NotLoaded.Reason.Filtered, libVersion)
         }
 
         // Everything above is cheap to check again, everything below isn't. Nothing about this apk

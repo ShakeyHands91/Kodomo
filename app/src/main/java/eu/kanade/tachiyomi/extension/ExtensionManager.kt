@@ -24,11 +24,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -77,12 +74,9 @@ class ExtensionManager(
             loadExtensions()
             ExtensionInstallReceiver(InstallationListener()).register(context)
 
-            // Everything the load decision rests on can change while running, so decide again
-            merge(
-                trustExtension.changes(),
-                preferences.enabledContentWarnings.changes().distinctUntilChanged().drop(1).map {},
-                preferences.applyContentWarningsToInstalled.changes().distinctUntilChanged().drop(1).map {},
-            )
+            // Trust is now the only part of the load decision that can change while running: the
+            // content rating policy is a build-time constant in mihon.kids.KidsPolicy.
+            trustExtension.changes()
                 .collectLatest { loadExtensions() }
         }
     }
