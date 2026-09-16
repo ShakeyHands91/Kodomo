@@ -61,6 +61,10 @@ Both lists fail closed: emptying one allows nothing rather than everything.
 
 Mihon's built-in **local source** works regardless. Files copied into the app's storage are readable with no store and no extensions at all.
 
+## Releases
+
+Pushing a `v*` tag builds signed APKs and publishes them as a GitHub release; release builds check this repository for updates in-app. See `RELEASING.md`.
+
 ## Changes from upstream
 
 This is a modified version of Mihon. Modifications are made in accordance with section 4(b) of the Apache License 2.0. Files changed relative to upstream:
