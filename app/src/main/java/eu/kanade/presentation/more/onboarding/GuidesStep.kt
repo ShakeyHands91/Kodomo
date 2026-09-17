@@ -56,7 +56,10 @@ internal class GuidesStep(
     }
 }
 
-const val GETTING_STARTED_URL = "https://mihon.app/docs/guides/getting-started"
+// Kodomo: upstream's getting-started guide walks a new user through adding any extension
+// repository they like, which is the opposite of how this build works and the first thing anyone
+// sees on first run. Points at this fork's own setup notes instead.
+const val GETTING_STARTED_URL = "https://github.com/ShakeyHands91/Kodomo#what-this-build-allows"
 
 @PreviewLightDark
 @Composable

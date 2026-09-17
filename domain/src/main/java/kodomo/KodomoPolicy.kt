@@ -1,4 +1,4 @@
-package mihon.kids
+package kodomo
 
 import mihon.domain.extension.model.ContentWarning
 
@@ -14,7 +14,7 @@ import mihon.domain.extension.model.ContentWarning
  * object, and is not meant to: an 18+ extension is refused for everyone, parent included. Changing
  * that means changing this file and rebuilding.
  */
-object KidsPolicy {
+object KodomoPolicy {
 
     /**
      * Content ratings this build will load.

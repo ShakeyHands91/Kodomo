@@ -161,12 +161,12 @@ object AboutScreen : Screen() {
                             .padding(vertical = 8.dp),
                         horizontalArrangement = Arrangement.Center,
                     ) {
-                        // Mihon Kids: upstream's own channels are deliberately not linked here.
+                        // Kodomo: upstream's own channels are deliberately not linked here.
                         // Mihon does not support this fork and shouldn't field its questions.
                         LinkIcon(
                             label = "GitHub",
                             icon = SimpleIcons.Github,
-                            url = "https://github.com/ShakeyHands91/Mihon-Kids",
+                            url = "https://github.com/ShakeyHands91/Kodomo",
                         )
                     }
                 }

@@ -40,7 +40,7 @@ The workflow refuses to build if the tag and `versionName` disagree, which catch
 
 `ReleaseServiceImpl.getDownloadLink` picks which APK to offer by looking for an ABI substring in the asset's **filename** — `-arm64-v8a`, `-armeabi-v7a`, `-x86_64`, `-x86` — and falls back to the asset containing none of them, which is the universal build.
 
-So `mihon-kids-v0.2.0-arm64-v8a.apk` works and `mihon-kids-v0.2.0-arm64.apk` does not: the app would find no matching asset and silently report no update available. If you ever rename the assets, keep those substrings.
+So `kodomo-v0.2.0-arm64-v8a.apk` works and `kodomo-v0.2.0-arm64.apk` does not: the app would find no matching asset and silently report no update available. If you ever rename the assets, keep those substrings.
 
 ## Signing
 

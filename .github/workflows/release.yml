@@ -63,7 +63,7 @@ jobs:
           # -x86_64 and -x86 intact, and keep the universal apk free of all four.
           for f in app-*-release.apk; do
             abi="${f#app-}"; abi="${abi%-release.apk}"
-            mv "$f" "mihon-kids-${GITHUB_REF_NAME}-${abi}.apk"
+            mv "$f" "kodomo-${GITHUB_REF_NAME}-${abi}.apk"
           done
           ls -la
 
@@ -72,6 +72,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "$GITHUB_REF_NAME" \
-            --title "Mihon Kids $GITHUB_REF_NAME" \
+            --title "Kodomo $GITHUB_REF_NAME" \
             --generate-notes \
-            app/build/outputs/apk/release/mihon-kids-*.apk
+            app/build/outputs/apk/release/kodomo-*.apk

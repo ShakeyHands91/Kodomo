@@ -41,8 +41,8 @@ class SourcePreferences(
         -1,
     )
 
-    // Mihon Kids: `enabled_content_warnings` and `apply_content_warnings_to_installed` are gone on
-    // purpose. What this build loads is fixed in mihon.kids.KidsPolicy and is not a preference.
+    // Kodomo: `enabled_content_warnings` and `apply_content_warnings_to_installed` are gone on
+    // purpose. What this build loads is fixed in kodomo.KodomoPolicy and is not a preference.
 
     val migrationSortingMode: Preference<SetMigrateSorting.Mode> = preferenceStore.getEnum(
         "pref_migration_sorting",

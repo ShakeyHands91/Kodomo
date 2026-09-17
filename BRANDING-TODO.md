@@ -4,7 +4,7 @@ The rebrand is complete — no Mihon artwork, naming or GitHub configuration rem
 
 ## What the icons are now
 
-Built from the Mihon Kids logo: a calico cat in round glasses reading a picture book.
+Built from the Kodomo logo: a calico cat in round glasses reading a picture book.
 
 | Resource | What it is |
 |---|---|

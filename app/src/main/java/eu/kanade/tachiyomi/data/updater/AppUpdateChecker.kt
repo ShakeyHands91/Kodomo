@@ -35,9 +35,9 @@ class AppUpdateChecker(
     }
 }
 
-// Mihon Kids: upstream's fork guidance says to change or disable the update checker, so that a
+// Kodomo: upstream's fork guidance says to change or disable the update checker, so that a
 // fork never offers its users the main app's releases. Points at this repository instead.
-const val GITHUB_REPO: String = "ShakeyHands91/Mihon-Kids"
+const val GITHUB_REPO: String = "ShakeyHands91/Kodomo"
 
 val RELEASE_TAG: String by lazy {
     if (isNightlyBuildType) {

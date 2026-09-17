@@ -75,7 +75,7 @@ class ExtensionManager(
             ExtensionInstallReceiver(InstallationListener()).register(context)
 
             // Trust is now the only part of the load decision that can change while running: the
-            // content rating policy is a build-time constant in mihon.kids.KidsPolicy.
+            // content rating policy is a build-time constant in kodomo.KodomoPolicy.
             trustExtension.changes()
                 .collectLatest { loadExtensions() }
         }

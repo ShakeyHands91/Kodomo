@@ -48,14 +48,14 @@ object SettingsBrowseScreen : SearchableSettings {
                     ),
                 ),
             ),
-            // Mihon Kids: upstream lets the user widen the allowed content ratings behind a device
+            // Kodomo: upstream lets the user widen the allowed content ratings behind a device
             // credential prompt. Both preferences are gone; what loads is fixed at build time in
-            // mihon.kids.KidsPolicy. All that is left here is a statement of that fact.
+            // kodomo.KodomoPolicy. All that is left here is a statement of that fact.
             Preference.PreferenceGroup(
                 title = stringResource(MR.strings.pref_category_extensions),
                 preferenceItems = listOf(
                     Preference.PreferenceItem.InfoPreference(
-                        stringResource(MR.strings.kids_content_policy_info),
+                        stringResource(MR.strings.kodomo_content_policy_info),
                     ),
                 ),
             ),

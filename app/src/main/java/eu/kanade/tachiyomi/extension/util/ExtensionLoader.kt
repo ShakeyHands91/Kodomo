@@ -12,13 +12,13 @@ import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceFactory
 import eu.kanade.tachiyomi.util.lang.Hash
 import eu.kanade.tachiyomi.util.storage.copyAndSetReadOnlyTo
+import kodomo.KodomoPolicy
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import logcat.LogPriority
 import mihon.app.di.appGraph
 import mihon.data.dalvik.DelegateLastClassLoaderCompat
 import mihon.domain.extension.model.ContentWarning
-import mihon.kids.KidsPolicy
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.core.common.util.system.logcat
 import java.io.File
@@ -63,7 +63,7 @@ internal object ExtensionLoader {
     /**
      * The rating an extension declares for itself, in its package metadata.
      *
-     * Self-declared and therefore only as honest as whoever built the apk — see [KidsPolicy] on why
+     * Self-declared and therefore only as honest as whoever built the apk — see [KodomoPolicy] on why
      * the store allowlist, not this value, is what the ban ultimately rests on.
      */
     private fun readContentWarning(pkgInfo: PackageInfo): ContentWarning {
@@ -86,14 +86,14 @@ internal object ExtensionLoader {
         val extension = context.packageManager.getPackageArchiveInfo(file.absolutePath, PACKAGE_FLAGS)
             ?.takeIf { isPackageAnExtension(it) } ?: return false
 
-        // Mihon Kids: refuse to even copy a disallowed apk into the private extension dir. The
+        // Kodomo: refuse to even copy a disallowed apk into the private extension dir. The
         // loader would filter it anyway, but there is no reason to keep it on disk.
         val contentWarning = readContentWarning(extension)
-        if (!KidsPolicy.isContentWarningAllowed(contentWarning)) {
+        if (!KodomoPolicy.isContentWarningAllowed(contentWarning)) {
             logcat(LogPriority.ERROR) { "Refusing to install extension rated $contentWarning." }
             return false
         }
-        if (!KidsPolicy.isExtensionAllowed(extension.packageName)) {
+        if (!KodomoPolicy.isExtensionAllowed(extension.packageName)) {
             logcat(LogPriority.ERROR) { "Refusing to install unapproved extension ${extension.packageName}." }
             return false
         }
@@ -342,9 +342,9 @@ internal object ExtensionLoader {
             reason = reason,
         )
 
-        // Mihon Kids: checked first and unconditionally, so a disallowed rating can never be talked
+        // Kodomo: checked first and unconditionally, so a disallowed rating can never be talked
         // out of by trusting a signature, and so the decision does not depend on any preference.
-        if (!KidsPolicy.isContentWarningAllowed(contentWarning)) {
+        if (!KodomoPolicy.isContentWarningAllowed(contentWarning)) {
             logcat(LogPriority.WARN) { "Extension $pkgName is rated $contentWarning and is not allowed" }
             return notLoaded(Extension.NotLoaded.Reason.Filtered)
         }
@@ -352,7 +352,7 @@ internal object ExtensionLoader {
         // The store's rating is self-declared, so the package allowlist is what the ban actually
         // rests on. Enforced here rather than at the install button, so an apk that arrives by any
         // other route — adb, a file manager, a restored backup — registers no sources either.
-        if (!KidsPolicy.isExtensionAllowed(pkgName)) {
+        if (!KodomoPolicy.isExtensionAllowed(pkgName)) {
             logcat(LogPriority.WARN) { "Extension $pkgName is not on the approved list" }
             return notLoaded(Extension.NotLoaded.Reason.Filtered)
         }
