@@ -1,10 +1,10 @@
 <div align="center">
-<img src="./.github/assets/logo.png" alt="Mihon Kids logo" width="120"/>
+<img src="./.github/assets/logo.png" alt="Kodomo logo" width="120"/>
 
-# Mihon Kids
+# Kodomo
 </div>
 
-A parental-control fork of [Mihon](https://github.com/mihonapp/mihon), an Android reader for manga, webtoons and comics.
+Kodomo is a parental-control fork of [Mihon](https://github.com/mihonapp/mihon), an Android reader for manga, webtoons and comics. "Kodomo" (子供) is Japanese for "child".
 
 Two things differ from upstream:
 
@@ -15,7 +15,7 @@ Two things differ from upstream:
 
 Upstream Mihon already models content ratings properly and can filter on them. What it does is put that filter behind the device credential — so on a child's own tablet, the child's own PIN unlocks it. Upstream's `authenticate()` helper also returns success outright when no screen lock is configured at all.
 
-Mihon Kids removes the choice instead of guarding it. The rating check runs first in the extension loader, ahead of signature trust, so a disallowed extension cannot be talked into loading by trusting it, and an APK sideloaded with `adb` is inert on disk rather than merely hidden from the UI.
+Kodomo removes the choice instead of guarding it. The rating check runs first in the extension loader, ahead of signature trust, so a disallowed extension cannot be talked into loading by trusting it, and an APK sideloaded with `adb` is inert on disk rather than merely hidden from the UI.
 
 ## What this does not do
 
@@ -38,7 +38,7 @@ Requires JDK 17 and the Android SDK (compileSdk 37.1). Create `keystore.properti
 
 ## What this build allows
 
-Two allowlists, both compile-time constants in `domain/src/main/java/mihon/kids/KidsPolicy.kt`.
+Two allowlists, both compile-time constants in `domain/src/main/java/kodomo/KodomoPolicy.kt`.
 
 **One extension store**, Keiyoushi:
 
@@ -69,7 +69,7 @@ Pushing a `v*` tag builds signed APKs and publishes them as a GitHub release; re
 
 This is a modified version of Mihon. Modifications are made in accordance with section 4(b) of the Apache License 2.0. Files changed relative to upstream:
 
-- `domain/src/main/java/mihon/kids/KidsPolicy.kt` *(new)* — the content and store policy
+- `domain/src/main/java/kodomo/KodomoPolicy.kt` *(new)* — the content and store policy
 - `app/.../extension/util/ExtensionLoader.kt` — rating checked first and unconditionally
 - `app/.../domain/extension/interactor/GetExtensionsByType.kt` — disallowed extensions not listed
 - `app/.../domain/source/service/SourcePreferences.kt` — content-warning preferences removed
@@ -78,7 +78,7 @@ This is a modified version of Mihon. Modifications are made in accordance with s
 - `domain/.../extension/interactor/AddExtensionStore.kt` — store allowlist enforced
 - `app/.../backup/restore/restorers/ExtensionStoreRestorer.kt` — unapproved stores skipped on restore
 - `app/.../migrations/TrustExtensionRepositoryMigration.kt` — legacy store import dropped
-- `app/.../migrations/KidsContentPolicyMigration.kt` *(new, replaces `ContentWarningMigration`)*
+- `app/.../migrations/KodomoContentPolicyMigration.kt` *(new, replaces `ContentWarningMigration`)*
 - `app/build.gradle.kts` — application ID, version series
 - Branding, README, issue templates and release workflows replaced or removed
 
@@ -93,7 +93,7 @@ The developer of this application has no affiliation with any content provider, 
 ```
 Copyright © 2015 Javier Tomás
 Copyright © 2024 Mihon Open Source Project
-Copyright © 2026 Mihon Kids contributors
+Copyright © 2026 Kodomo contributors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

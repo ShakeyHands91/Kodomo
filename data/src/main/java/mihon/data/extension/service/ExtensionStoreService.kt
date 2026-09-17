@@ -7,6 +7,7 @@ import eu.kanade.tachiyomi.extension.model.Extension
 import eu.kanade.tachiyomi.network.GET
 import eu.kanade.tachiyomi.network.NetworkHelper
 import eu.kanade.tachiyomi.network.awaitSuccess
+import kodomo.KodomoPolicy
 import kotlinx.serialization.decodeFromByteArray
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.okio.decodeFromBufferedSource
@@ -17,7 +18,6 @@ import mihon.data.extension.model.NetworkLegacyExtension
 import mihon.data.extension.model.NetworkLegacyExtensionRepo
 import mihon.data.extension.model.toAvailableExtensions
 import mihon.domain.extension.model.ExtensionStore
-import mihon.kids.KidsPolicy
 import okio.BufferedSource
 import okio.buffer
 import okio.gzip
@@ -57,10 +57,10 @@ class ExtensionStoreService(
                 }
 
                 if (networkStore is NetworkLegacyExtensionRepo && networkStore.indexV2 != null) {
-                    // Mihon Kids: a store's own index can redirect us to any URL it likes. Without
+                    // Kodomo: a store's own index can redirect us to any URL it likes. Without
                     // this check an approved store could hand off to an unapproved one, whose
                     // signing key would then be trusted — the allowlist would be decorative.
-                    if (!KidsPolicy.isStoreAllowed(networkStore.indexV2)) {
+                    if (!KodomoPolicy.isStoreAllowed(networkStore.indexV2)) {
                         throw IllegalArgumentException(
                             "Store redirected to ${networkStore.indexV2}, which is not approved for this build.",
                         )

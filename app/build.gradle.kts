@@ -31,9 +31,9 @@ android {
     namespace = "eu.kanade.tachiyomi"
 
     defaultConfig {
-        // Mihon Kids: must differ from upstream's "app.mihon" so both can coexist on a device and
+        // Kodomo: must differ from upstream's "app.mihon" so both can coexist on a device and
         // so this build never receives an upstream update.
-        applicationId = "app.mihonkids"
+        applicationId = "app.kodomo"
 
         // Own version series. Forked from Mihon 0.20.4 (versionCode 30); kept above that so the
         // migration framework, whose versions are shared with upstream's, still runs in order.
@@ -49,7 +49,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    // Mihon Kids: CI signs with the keystore held in the repository's secrets, so every build
+    // Kodomo: CI signs with the keystore held in the repository's secrets, so every build
     // signs with the same key and installs as an update over the last one. Without this each CI
     // run generates its own throwaway debug keystore, and Android refuses the update.
     val keystoreBase64 = System.getenv("KEYSTORE_BASE64")

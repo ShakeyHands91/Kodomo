@@ -5,9 +5,9 @@ import eu.kanade.domain.extension.model.Extensions
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.tachiyomi.extension.ExtensionManager
 import eu.kanade.tachiyomi.extension.model.Extension
+import kodomo.KodomoPolicy
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import mihon.kids.KidsPolicy
 
 @Inject
 class GetExtensionsByType(
@@ -36,9 +36,9 @@ class GetExtensionsByType(
                 .filter { extension ->
                     _loaded.none { it.pkgName == extension.pkgName } &&
                         _notLoaded.none { it.pkgName == extension.pkgName } &&
-                        // Mihon Kids: don't advertise what this build refuses to load
-                        KidsPolicy.isContentWarningAllowed(extension.contentWarning) &&
-                        KidsPolicy.isExtensionAllowed(extension.pkgName)
+                        // Kodomo: don't advertise what this build refuses to load
+                        KodomoPolicy.isContentWarningAllowed(extension.contentWarning) &&
+                        KodomoPolicy.isExtensionAllowed(extension.pkgName)
                 }
                 .flatMap { ext ->
                     ext.sources.filter { it.lang in enabledLanguages }

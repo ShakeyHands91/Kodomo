@@ -1,4 +1,4 @@
-A parental-control fork of Mihon, an Android reader for manga, webtoons and comics.
+Kodomo is a parental-control fork of Mihon, an Android reader for manga, webtoons and comics.
 
 What is different:
 * Extensions rated 18+ or mixed cannot be installed, loaded or listed. This is fixed at build time — there is no setting that changes it.
